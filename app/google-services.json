@@ -1,0 +1,59 @@
+{
+  "project_info": {
+    "project_number": "148055810445",
+    "firebase_url": "https://tactical-runway-149723.firebaseio.com",
+    "project_id": "tactical-runway-149723",
+    "storage_bucket": "tactical-runway-149723.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:148055810445:android:1b25fd4b001782c2",
+        "android_client_info": {
+          "package_name": "com.digzdigital.shoeapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "148055810445-k9b793g2vkir3lo03fufs8jv1tdkeoak.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.digzdigital.shoeapp",
+            "certificate_hash": "187587744445049121CD490196CCD992D8C3BBE7"
+          }
+        },
+        {
+          "client_id": "148055810445-qjv8q3r9nf90mtkere1nu80ije5j810v.apps.googleusercontent.com",
+          "client_type": 3
+        },
+        {
+          "client_id": "148055810445-e17djs7dbo67ar5crae3u27jrkonosqr.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAWRw1NTIbA-7ktVzZZNCGtuWjNBPARA_Y"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "148055810445-qjv8q3r9nf90mtkere1nu80ije5j810v.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
