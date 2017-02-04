@@ -5,6 +5,7 @@ import android.content.res.Resources;
 
 import com.digzdigital.shoeapp.adapter.PlaceAutoCompleteAdapter;
 import com.digzdigital.shoeapp.device.DeviceConnector;
+import com.digzdigital.shoeapp.navigation.directioning.DetermineDirection;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -12,6 +13,7 @@ import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.mapzen.android.lost.api.Status;
 import com.mapzen.android.routing.MapzenRouter;
+import com.mapzen.helpers.RouteEngine;
 
 import org.w3c.dom.Text;
 
@@ -37,6 +39,9 @@ public interface NavigationContract {
         Polyline drawOnMap(PolylineOptions polylineOptions);
         void addMapMarker(MarkerOptions markerOptions);
         MapzenRouter getRouter();
+        DeviceConnector getDeviceConnector();
+        RouteEngine getRouteEngine();
+        DetermineDirection determineDirection();
     }
 
     interface Presenter{

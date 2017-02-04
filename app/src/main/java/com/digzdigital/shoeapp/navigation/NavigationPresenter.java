@@ -14,7 +14,6 @@ import android.util.Log;
 import android.view.View;
 
 import com.digzdigital.shoeapp.R;
-import com.digzdigital.shoeapp.ShoeApplication;
 import com.digzdigital.shoeapp.adapter.PlaceAutoCompleteAdapter;
 import com.digzdigital.shoeapp.device.BluetoothModule;
 import com.digzdigital.shoeapp.device.DeviceConnector;
@@ -56,13 +55,9 @@ public class NavigationPresenter implements NavigationContract.Presenter, RouteC
     private static final String LOG_TAG = "MyActivity";
     private static final LatLngBounds BOUNDS_NIGERIA = new LatLngBounds(new LatLng(5.065341647205726, 2.9987719580531),
             new LatLng(9.9, 5.9));
-    @Inject
     public DeviceConnector bluetoothModule;
-    @Inject
     public MapzenRouter mapzenRouter;
-    @Inject
     public RouteEngine routeEngine;
-    @Inject
     public DetermineDirection determineDirection;
 
     private double[] start, end;
@@ -86,7 +81,6 @@ private List<Polyline> polylines = new ArrayList<>();
     };
     public NavigationPresenter(Context context) {
         this.context = context;
-        ShoeApplication.getInstance().getAppComponent().inject(this);
     }
 
 
@@ -96,7 +90,7 @@ private List<Polyline> polylines = new ArrayList<>();
     }
 
     private void startRouting() {
-        // mapzenRouter = view.getRouter();
+        mapzenRouter = view.getRouter();
         mapzenRouter.setWalking();
         mapzenRouter.setLocation(start);
         mapzenRouter.setLocation(end);
@@ -109,7 +103,7 @@ private List<Polyline> polylines = new ArrayList<>();
     @Override
     public void initialiseDevice() {
         bluetoothModuleInitialised = true;
-        bluetoothModule = new BluetoothModule(context);
+        bluetoothModule = view.getDeviceConnector();
         bluetoothModule.initialiseDevice();
         bluetoothModule.setDevice(device);
         bluetoothModule.initiateConnectionToDevice();
@@ -360,12 +354,14 @@ private List<Polyline> polylines = new ArrayList<>();
 
     @Override
     public void success(Route route) {
+        view.dismissProgressDialog();
+        view.showToast("route info success");
         view.setStartTripVisibility(View.VISIBLE);
         view.addMapMarker(createMarker(start, true));
         view.addMapMarker(createMarker(end, false));
+        
         listenerForRoute(route);
         createPolyline(route);
-
 
 
     }
@@ -396,7 +392,8 @@ private List<Polyline> polylines = new ArrayList<>();
 
     @Override
     public void failure(int i) {
-
+        view.dismissProgressDialog();
+        view.showToast("Error getting route info");
     }
 
 
@@ -445,6 +442,7 @@ private List<Polyline> polylines = new ArrayList<>();
 
             }
         };
+        routeEngine = view.getRouteEngine();
         routeEngine.setListener(routeListener);
         routeEngine.setRoute(route);
     }
@@ -490,6 +488,6 @@ private List<Polyline> polylines = new ArrayList<>();
 
     @Override
     public void setAdapterBounds(LatLngBounds bounds) {
-        adapter.setBounds(bounds);
+        adapter.setBounds(BOUNDS_NIGERIA);
     }
 }

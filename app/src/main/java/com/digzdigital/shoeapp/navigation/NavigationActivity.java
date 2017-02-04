@@ -14,9 +14,11 @@ import android.widget.AdapterView;
 import android.widget.Toast;
 
 import com.digzdigital.shoeapp.R;
-import com.digzdigital.shoeapp.ShoeApplication;
 import com.digzdigital.shoeapp.adapter.PlaceAutoCompleteAdapter;
 import com.digzdigital.shoeapp.databinding.ActivityDirectionBinding;
+import com.digzdigital.shoeapp.device.BluetoothModule;
+import com.digzdigital.shoeapp.device.DeviceConnector;
+import com.digzdigital.shoeapp.navigation.directioning.DetermineDirection;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -30,14 +32,16 @@ import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.mapzen.android.lost.api.Status;
 import com.mapzen.android.routing.MapzenRouter;
+import com.mapzen.helpers.RouteEngine;
 
 import javax.inject.Inject;
 
 public class NavigationActivity extends AppCompatActivity implements View.OnClickListener, NavigationContract.View, OnMapReadyCallback {
 
     private static final int REQUEST_CHECK_SETTINGS = 100;
-    @Inject
+
     public NavigationPresenter presenter;
+
     private ProgressDialog progressDialog;
     private ActivityDirectionBinding binding;
     private GoogleMap map;
@@ -46,9 +50,9 @@ public class NavigationActivity extends AppCompatActivity implements View.OnClic
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = DataBindingUtil.setContentView(this, R.layout.activity_direction);
-        ((ShoeApplication) getApplication()).getAppComponent().inject(this);
-
+getRouter();
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        presenter = new NavigationPresenter(this);
         presenter.setView(this);
         presenter.setupGoogleServices();
         setupMaps();
@@ -219,8 +223,8 @@ public class NavigationActivity extends AppCompatActivity implements View.OnClic
             }
         });
 
-        CameraUpdate center = CameraUpdateFactory.newLatLng(new LatLng(6.4654, -3.4066));
-        CameraUpdate zoom = CameraUpdateFactory.zoomTo(16);
+        CameraUpdate center = CameraUpdateFactory.newLatLng(new LatLng(6.667876, 3.151196));
+        CameraUpdate zoom = CameraUpdateFactory.zoomTo(8);
 
         map.moveCamera(center);
         map.animateCamera(zoom);
@@ -304,5 +308,20 @@ public class NavigationActivity extends AppCompatActivity implements View.OnClic
     @Override
     public MapzenRouter getRouter(){
         return new MapzenRouter(this, "mapzen-4DXdxtn");
+    }
+
+    @Override
+    public DeviceConnector getDeviceConnector() {
+        return new BluetoothModule(this);
+    }
+
+    @Override
+    public RouteEngine getRouteEngine() {
+        return new RouteEngine();
+    }
+
+    @Override
+    public DetermineDirection determineDirection() {
+        return new DetermineDirection();
     }
 }
