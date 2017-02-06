@@ -5,6 +5,7 @@ import android.Manifest;
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -26,6 +27,8 @@ import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.PlaceBuffer;
 import com.google.android.gms.location.places.Places;
+import com.google.android.gms.maps.CameraUpdate;
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
@@ -91,9 +94,11 @@ private List<Polyline> polylines = new ArrayList<>();
 
     private void startRouting() {
         mapzenRouter = view.getRouter();
+
         mapzenRouter.setWalking();
         mapzenRouter.setLocation(start);
         mapzenRouter.setLocation(end);
+        mapzenRouter.setCallback(this);
         mapzenRouter.fetch();
         createLostApiClient();
 
@@ -359,18 +364,19 @@ private List<Polyline> polylines = new ArrayList<>();
         view.setStartTripVisibility(View.VISIBLE);
         view.addMapMarker(createMarker(start, true));
         view.addMapMarker(createMarker(end, false));
-        
-        listenerForRoute(route);
+        CameraUpdate center = CameraUpdateFactory.newLatLng(new LatLng(start[0], start[1]));
+        CameraUpdate zoom = CameraUpdateFactory.zoomTo(16);
+        view.centerCamera(center);
+        view.zoomCamera(zoom);
         createPolyline(route);
-
-
+        listenerForRoute(route);
     }
 
     private void createPolyline(Route route) {
+        Log.d("DIGZ", route.getRawRoute().toString());
         ArrayList<ValhallaLocation> routes = route.getGeometry();
         PolylineOptions polylineOptions = new PolylineOptions();
-        int colorIndex = /*i*/1 % COLORS.length;
-        polylineOptions.color(context.getResources().getColor(COLORS[colorIndex]));
+        polylineOptions.color(Color.BLUE);
         polylineOptions.width(13);
         for (int i = 0; i < routes.size(); i++) {
             double latitude = routes.get(i).getLatitude();
@@ -445,6 +451,7 @@ private List<Polyline> polylines = new ArrayList<>();
         routeEngine = view.getRouteEngine();
         routeEngine.setListener(routeListener);
         routeEngine.setRoute(route);
+
     }
 
 
