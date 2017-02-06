@@ -19,22 +19,15 @@ import com.digzdigital.shoeapp.databinding.ActivityDirectionBinding;
 import com.digzdigital.shoeapp.device.BluetoothModule;
 import com.digzdigital.shoeapp.device.DeviceConnector;
 import com.digzdigital.shoeapp.navigation.directioning.DetermineDirection;
-import com.google.android.gms.maps.CameraUpdate;
-import com.google.android.gms.maps.CameraUpdateFactory;
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.CameraPosition;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.LatLngBounds;
-import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.maps.model.Polyline;
-import com.google.android.gms.maps.model.PolylineOptions;
+import com.mapzen.android.graphics.MapFragment;
+import com.mapzen.android.graphics.MapzenMap;
+import com.mapzen.android.graphics.OnMapReadyCallback;
+import com.mapzen.android.graphics.model.Marker;
+import com.mapzen.android.graphics.model.Polyline;
 import com.mapzen.android.lost.api.Status;
 import com.mapzen.android.routing.MapzenRouter;
 import com.mapzen.helpers.RouteEngine;
-
-import javax.inject.Inject;
+import com.mapzen.tangram.LngLat;
 
 public class NavigationActivity extends AppCompatActivity implements View.OnClickListener, NavigationContract.View, OnMapReadyCallback {
 
@@ -44,13 +37,12 @@ public class NavigationActivity extends AppCompatActivity implements View.OnClic
 
     private ProgressDialog progressDialog;
     private ActivityDirectionBinding binding;
-    private GoogleMap map;
+    private MapzenMap map;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = DataBindingUtil.setContentView(this, R.layout.activity_direction);
-getRouter();
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         presenter = new NavigationPresenter(this);
         presenter.setView(this);
@@ -144,7 +136,7 @@ getRouter();
     }
 
     private void setupMaps() {
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map_fragment);
+        MapFragment mapFragment = (MapFragment) getSupportFragmentManager().findFragmentById(R.id.map_fragment);
         mapFragment.getMapAsync(this);
     }
 
@@ -212,22 +204,14 @@ getRouter();
 
 
     @Override
-    public void onMapReady(GoogleMap map) {
+    public void onMapReady(MapzenMap map) {
         this.map = map;
         presenter.setUpPlaceAutoCompleteAdapter();
-        map.setOnCameraChangeListener(new GoogleMap.OnCameraChangeListener() {
-            @Override
-            public void onCameraChange(CameraPosition position) {
-                LatLngBounds bounds = NavigationActivity.this.map.getProjection().getVisibleRegion().latLngBounds;
-                presenter.setAdapterBounds(bounds);
-            }
-        });
+        presenter.setAdapterBounds();
 
-        CameraUpdate center = CameraUpdateFactory.newLatLng(new LatLng(6.667876, 3.151196));
-        CameraUpdate zoom = CameraUpdateFactory.zoomTo(8);
 
-        map.moveCamera(center);
-        map.animateCamera(zoom);
+        map.setPosition(new LngLat(3.3158108, 6.670756));
+        map.setZoom(16f);
     }
 
     @Override
@@ -286,27 +270,27 @@ getRouter();
 
 
     @Override
-    public void centerCamera(CameraUpdate center) {
-        map.moveCamera(center);
+    public void centerCamera(LngLat lngLat) {
+        map.setPosition(lngLat);
     }
 
     @Override
-    public void zoomCamera(CameraUpdate zoom) {
-        map.moveCamera(zoom);
+    public void zoomCamera(float zoom) {
+        map.setZoom(zoom);
     }
 
     @Override
-    public Polyline drawOnMap(PolylineOptions polylineOptions) {
-        return map.addPolyline(polylineOptions);
+    public void drawOnMap(Polyline polyline) {
+        map.addPolyline(polyline);
     }
 
     @Override
-    public void addMapMarker(MarkerOptions markerOptions) {
-        map.addMarker(markerOptions);
+    public void addMapMarker(Marker marker) {
+        map.addMarker(marker);
     }
 
     @Override
-    public MapzenRouter getRouter(){
+    public MapzenRouter getRouter() {
         return new MapzenRouter(this, "mapzen-4DXdxtn");
     }
 

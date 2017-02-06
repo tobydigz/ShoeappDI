@@ -9,11 +9,13 @@ import com.digzdigital.shoeapp.navigation.directioning.DetermineDirection;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.mapzen.android.graphics.model.Marker;
+import com.mapzen.android.graphics.model.Polyline;
 import com.mapzen.android.lost.api.Status;
 import com.mapzen.android.routing.MapzenRouter;
 import com.mapzen.helpers.RouteEngine;
+import com.mapzen.tangram.LngLat;
 
 import org.w3c.dom.Text;
 
@@ -34,10 +36,10 @@ public interface NavigationContract {
         void setPlaceAdapterToView(PlaceAutoCompleteAdapter adapter);
         void getResultForLost(Status status);
         void setLeftRightVisibility(int visibility);
-        void centerCamera(CameraUpdate center);
-        void zoomCamera(CameraUpdate zoom);
-        Polyline drawOnMap(PolylineOptions polylineOptions);
-        void addMapMarker(MarkerOptions markerOptions);
+        void centerCamera(LngLat lngLat);
+        void zoomCamera(float zoom);
+        void drawOnMap(Polyline polyline);
+        void addMapMarker(Marker marker);
         MapzenRouter getRouter();
         DeviceConnector getDeviceConnector();
         RouteEngine getRouteEngine();
@@ -65,6 +67,6 @@ public interface NavigationContract {
         void startTrip();
         void sendLeftToDevice();
         void sendRightToDevice();
-        void setAdapterBounds(LatLngBounds bounds);
+        void setAdapterBounds();
     }
 }

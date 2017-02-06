@@ -5,7 +5,6 @@ import android.Manifest;
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -16,7 +15,6 @@ import android.view.View;
 
 import com.digzdigital.shoeapp.R;
 import com.digzdigital.shoeapp.adapter.PlaceAutoCompleteAdapter;
-import com.digzdigital.shoeapp.device.BluetoothModule;
 import com.digzdigital.shoeapp.device.DeviceConnector;
 import com.digzdigital.shoeapp.navigation.directioning.DetermineDirection;
 import com.google.android.gms.common.ConnectionResult;
@@ -27,14 +25,10 @@ import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.PlaceBuffer;
 import com.google.android.gms.location.places.Places;
-import com.google.android.gms.maps.CameraUpdate;
-import com.google.android.gms.maps.CameraUpdateFactory;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
-import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.maps.model.Polyline;
-import com.google.android.gms.maps.model.PolylineOptions;
+import com.mapzen.android.graphics.model.Marker;
+import com.mapzen.android.graphics.model.Polyline;
 import com.mapzen.android.lost.api.LocationListener;
 import com.mapzen.android.lost.api.LocationRequest;
 import com.mapzen.android.lost.api.LocationServices;
@@ -46,23 +40,28 @@ import com.mapzen.android.routing.MapzenRouter;
 import com.mapzen.helpers.RouteEngine;
 import com.mapzen.helpers.RouteListener;
 import com.mapzen.model.ValhallaLocation;
+import com.mapzen.tangram.LngLat;
 import com.mapzen.valhalla.Route;
 import com.mapzen.valhalla.RouteCallback;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.inject.Inject;
-
 public class NavigationPresenter implements NavigationContract.Presenter, RouteCallback, GoogleApiClient.OnConnectionFailedListener, GoogleApiClient.ConnectionCallbacks, ResultCallback<Status>, LostApiClient.ConnectionCallbacks {
     private static final String LOG_TAG = "MyActivity";
     private static final LatLngBounds BOUNDS_NIGERIA = new LatLngBounds(new LatLng(5.065341647205726, 2.9987719580531),
             new LatLng(9.9, 5.9));
+    private static final int[] COLORS = new int[]{
+            R.color.colorPrimaryDark,
+            R.color.colorPrimary,
+            R.color.colorPrimaryLight,
+            R.color.colorAccent,
+            R.color.primary_dark_material_light
+    };
     public DeviceConnector bluetoothModule;
     public MapzenRouter mapzenRouter;
     public RouteEngine routeEngine;
     public DetermineDirection determineDirection;
-
     private double[] start, end;
     private LostApiClient lostApiClient;
     private Context context;
@@ -74,14 +73,7 @@ public class NavigationPresenter implements NavigationContract.Presenter, RouteC
     private LocationRequest request;
     private LocationListener listener;
     private boolean connectedToMapzen = false;
-private List<Polyline> polylines = new ArrayList<>();
-    private static final int[] COLORS = new int[]{
-            R.color.colorPrimaryDark,
-            R.color.colorPrimary,
-            R.color.colorPrimaryLight,
-            R.color.colorAccent,
-            R.color.primary_dark_material_light
-    };
+
     public NavigationPresenter(Context context) {
         this.context = context;
     }
@@ -185,7 +177,6 @@ private List<Polyline> polylines = new ArrayList<>();
         LocationSettingsStates states = locationSettingsResult.getLocationSettingsStates();
         com.mapzen.android.lost.api.Status status = locationSettingsResult.getStatus();
         checkStatusApi(status);
-
 
 
     }
@@ -362,12 +353,11 @@ private List<Polyline> polylines = new ArrayList<>();
         view.dismissProgressDialog();
         view.showToast("route info success");
         view.setStartTripVisibility(View.VISIBLE);
-        view.addMapMarker(createMarker(start, true));
-        view.addMapMarker(createMarker(end, false));
-        CameraUpdate center = CameraUpdateFactory.newLatLng(new LatLng(start[0], start[1]));
-        CameraUpdate zoom = CameraUpdateFactory.zoomTo(16);
-        view.centerCamera(center);
-        view.zoomCamera(zoom);
+        view.addMapMarker(createMarker(start));
+        view.addMapMarker(createMarker(end));
+
+        view.centerCamera(new LngLat(start[1], start[0]));
+        view.zoomCamera(16f);
         createPolyline(route);
         listenerForRoute(route);
     }
@@ -375,25 +365,19 @@ private List<Polyline> polylines = new ArrayList<>();
     private void createPolyline(Route route) {
         Log.d("DIGZ", route.getRawRoute().toString());
         ArrayList<ValhallaLocation> routes = route.getGeometry();
-        PolylineOptions polylineOptions = new PolylineOptions();
-        polylineOptions.color(Color.BLUE);
-        polylineOptions.width(13);
+        List<LngLat> lngLats = new ArrayList<>();
         for (int i = 0; i < routes.size(); i++) {
             double latitude = routes.get(i).getLatitude();
             double longitude = routes.get(i).getLongitude();
-            LatLng point = new LatLng(latitude, longitude);
-            polylineOptions.add(point);
+            LngLat point = new LngLat(longitude, latitude);
+            lngLats.add(point);
         }
-        view.drawOnMap(polylineOptions);
+        Polyline polyline = new Polyline(lngLats);
+        view.drawOnMap(polyline);
     }
 
-    private MarkerOptions createMarker(double[] position, boolean startMarker){
-        MarkerOptions options = new MarkerOptions();
-        options.position(new LatLng(position[0], position[1]));
-        if (startMarker)
-        options.icon(BitmapDescriptorFactory.fromResource(R.drawable.start_blue));
-        else options.icon(BitmapDescriptorFactory.fromResource(R.drawable.end_green));
-        return options;
+    private Marker createMarker(double[] position) {
+        return new Marker(position[1], position[0]);
     }
 
     @Override
@@ -429,8 +413,8 @@ private List<Polyline> polylines = new ArrayList<>();
             public void onApproachInstruction(int index) {
                 determineDirection.setNewDirection(route.getRouteInstructions().get(index));
                 determineDirection.setOldDirection(route.getRouteInstructions().get(index - 1));
-                if (determineDirection.isToGoLeft())sendLeftToDevice();
-                if (!determineDirection.isToGoLeft())sendRightToDevice();
+                if (determineDirection.isToGoLeft()) sendLeftToDevice();
+                if (!determineDirection.isToGoLeft()) sendRightToDevice();
             }
 
             @Override
@@ -494,7 +478,7 @@ private List<Polyline> polylines = new ArrayList<>();
     }
 
     @Override
-    public void setAdapterBounds(LatLngBounds bounds) {
+    public void setAdapterBounds() {
         adapter.setBounds(BOUNDS_NIGERIA);
     }
 }
